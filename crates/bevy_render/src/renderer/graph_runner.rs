@@ -57,9 +57,11 @@ impl RenderGraphRunner {
         render_device: RenderDevice,
         queue: &wgpu::Queue,
         world: &World,
+        finalizer: impl FnOnce(&mut wgpu::CommandEncoder),
     ) -> Result<(), RenderGraphRunnerError> {
         let mut render_context = RenderContext::new(render_device);
         Self::run_graph(graph, None, &mut render_context, world, &[])?;
+        finalizer(render_context.command_encoder());
         {
             #[cfg(feature = "trace")]
             let _span = info_span!("submit_graph_commands").entered();
